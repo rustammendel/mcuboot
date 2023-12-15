@@ -46,7 +46,7 @@ class TestDumpInfo:
         return tmp_path_factory.mktemp("keys")
 
     @pytest.fixture(autouse=True)
-    def setup(self, tmp_path_persistent, key_type):
+    def setup(self, tmp_path_persistent, key_type="rsa-2048"):
         """Generate keys and images for testing"""
 
         self.key = tmp_name(tmp_path_persistent, key_type, ".key")
@@ -318,3 +318,12 @@ class TestDumpInfo:
         assert "ROM_FIXED" in result.stdout
         assert DUMPINFO_SUCCESS_LITERAL in result.stdout
         assert DUMPINFO_TRAILER in result.stdout
+
+    @pytest.mark.parametrize("hex_addr", ("0", "16", "35"))
+    def test_dumpinfo_hex(self, tmp_path_persistent, hex_addr):
+        self.image_signed = signed_images_dir + "/hex/" + f"zero_hex-addr_{hex_addr}" + ".hex"
+        result = self.runner.invoke(
+            imgtool, ["dumpinfo", str(self.image_signed)]
+        )
+        assert result.exit_code == 0
+        assert DUMPINFO_SUCCESS_LITERAL in result.stdout
