@@ -26,6 +26,11 @@ except ValueError:
     pass
 
 
+def assert_valid(result):
+    assert result.exit_code == 0
+    assert "Image was correctly validated" in result.stdout
+
+
 class TestVerify:
     image = None
     image_signed = None
@@ -64,9 +69,7 @@ class TestVerifyBasic(TestVerify):
                 str(self.image_signed),
             ],
         )
-        print(result.stdout)
-        assert result.exit_code == 0
-        assert "Image was correctly validated" in result.stdout
+        assert_valid(result)
 
     @pytest.mark.parametrize("key_type", KEY_TYPES)
     def test_verify_wrong_key(self, key_type, tmp_path_persistent):
@@ -206,8 +209,7 @@ class TestVerifyEncryptedClear(TestVerify):
                 str(self.image_signed),
             ],
         )
-        assert result.exit_code == 0
-        assert "Image was correctly validated" in result.stdout
+        assert_valid(result)
 
     @pytest.mark.parametrize("key_type", KEY_TYPES)
     def test_verify_encrypted_clear_wrong_key(self, key_type, tmp_path_persistent):
@@ -256,8 +258,7 @@ class TestVerifyCustomTLV(TestVerify):
                 str(self.image_signed),
             ],
         )
-        assert result.exit_code == 0
-        assert "Image was correctly validated" in result.stdout
+        assert_valid(result)
 
     @pytest.mark.parametrize("key_type", KEY_TYPES)
     def test_verify_custom_tlv_no_key(self, key_type, tmp_path_persistent):
@@ -272,9 +273,7 @@ class TestVerifyCustomTLV(TestVerify):
                 str(self.image_signed),
             ],
         )
-        print(result.stdout)
-        assert result.exit_code == 0
-        assert "Image was correctly validated" in result.stdout
+        assert_valid(result)
 
 
 class TestVerifyNoKey(TestVerify):
@@ -294,9 +293,7 @@ class TestVerifyNoKey(TestVerify):
                 str(self.image_signed),
             ],
         )
-        print(result.stdout)
-        assert result.exit_code == 0
-        assert "Image was correctly validated" in result.stdout
+        assert_valid(result)
 
     def test_verify_no_key_image_with_key(self):
         """Test verify image signed without key, attempt to verify with a key should fail on signature check"""
@@ -313,7 +310,6 @@ class TestVerifyNoKey(TestVerify):
                 str(self.image_signed),
             ],
         )
-        print(result.stdout)
         assert result.exit_code != 0
         assert "No signature found for the given key" in result.stdout
 
@@ -332,7 +328,6 @@ class TestVerifyNoKey(TestVerify):
                 str(self.image_signed),
             ],
         )
-        print(result.stdout)
         assert result.exit_code != 0
         assert "Key type does not match TLV record" in result.stdout
 
@@ -364,9 +359,7 @@ class TestVerifyPubKey(TestVerify):
                 str(self.image_signed),
             ],
         )
-        print(result.stdout)
-        assert result.exit_code == 0
-        assert "Image was correctly validated" in result.stdout
+        assert_valid(result)
 
     @pytest.mark.parametrize("key_type", ("ecdsa-p384",))
     def test_verify_384_key(self, key_type):
@@ -381,9 +374,7 @@ class TestVerifyPubKey(TestVerify):
                 str(self.image_signed),
             ],
         )
-        print(result.stdout)
-        assert result.exit_code == 0
-        assert "Image was correctly validated" in result.stdout
+        assert_valid(result)
 
     @pytest.mark.parametrize("key_type", KEY_TYPES[:-2])
     def test_verify_key_not_matching(self, key_type, tmp_path_persistent):
@@ -401,7 +392,6 @@ class TestVerifyPubKey(TestVerify):
                 str(self.image_signed),
             ],
         )
-        print(result.stdout)
         assert result.exit_code != 0
         assert "Key type does not match TLV record" in result.stdout
 
@@ -420,6 +410,31 @@ class TestVerifyPubKey(TestVerify):
                 str(self.image_signed),
             ],
         )
-        print(result.stdout)
         assert result.exit_code != 0
         assert "Key type does not match TLV record" in result.stdout
+
+
+class TestVerifyHex(TestVerify):
+    key = None
+    test_signed_images_dir = signed_images_dir + "/hex/"
+
+    @pytest.fixture(autouse=True)
+    def setup(self, request, tmp_path_persistent, key_type="rsa-2048"):
+        self.key = "./keys/" + key_type + ".key"
+
+    @pytest.mark.parametrize("hex_addr", ("0", "16", "35"))
+    def test_verify_basic(self, hex_addr, tmp_path_persistent):
+        """Test verify basic image"""
+
+        self.image_signed = self.test_signed_images_dir + f"zero_hex-addr_{hex_addr}" + ".hex"
+
+        result = self.runner.invoke(
+            imgtool,
+            [
+                "verify",
+                "--key",
+                str(self.key),
+                str(self.image_signed),
+            ],
+        )
+        assert_valid(result)
