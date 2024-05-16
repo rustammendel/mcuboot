@@ -13,10 +13,10 @@
 # limitations under the License.
 
 import pytest
-
 from click.testing import CliRunner
-from imgtool.main import imgtool
+
 from imgtool import imgtool_version
+from imgtool.main import imgtool
 
 # all available imgtool commands
 COMMANDS = [
