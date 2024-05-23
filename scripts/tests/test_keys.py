@@ -192,7 +192,7 @@ class TestLoading(TestKeys):
             load_key(gen_key)
         captured = capsys.readouterr()
 
-        assert "Key File Not Found" in captured.out
+        assert "Key file not found" in captured.out
 
 
 class TestGetPriv(TestKeys):

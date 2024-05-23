@@ -106,7 +106,7 @@ class TestVerifyBasic(TestVerify):
             ],
         )
         assert result.exit_code != 0
-        assert "File Not Found" in result.stdout
+        assert "Key file not found" in result.stdout
 
     @pytest.mark.parametrize("key_type", KEY_TYPES)
     def test_verify_image_not_exists(self, key_type, tmp_path_persistent):
@@ -124,7 +124,7 @@ class TestVerifyBasic(TestVerify):
             ],
         )
         assert result.exit_code != 0
-        assert "File Not Found" in result.stdout
+        assert "Image file not found" in result.stdout
 
     @pytest.mark.parametrize("key_type", ("rsa-3072",))
     def test_verify_key_inv_magic(self, key_type, tmp_path_persistent):
