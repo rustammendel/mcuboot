@@ -130,7 +130,7 @@ class TLV:
         else:
             buf = struct.pack(e + 'BBH', TLV_VALUES[kind], 0, len(payload))
         self.buf += buf
-        self.buf += payload
+        self.buf += payload if e == '>' else to_little(payload)
 
     def get(self):
         if len(self.buf) == 0:
